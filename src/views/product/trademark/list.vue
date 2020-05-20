@@ -126,9 +126,13 @@
       //显示修改页面,调用的也是添加的dialog页面,所以数据操作和添加的合并为一个
       showUpdate(trademark){
         //将当前品牌对象保存到form ,为了在dialog页面中显示
-        this.form = trademark;
+        //这样写的是对地址进行操作,会影响页面
+        // this.form = trademark;
+        //所以解构
+        this.form ={...trademark};
         //显示
         this.isShowDialog = true;
+
       },
       handleLogoSuccess(res, file) {
         // this.imageUrl = URL.createObjectURL(file.raw);
