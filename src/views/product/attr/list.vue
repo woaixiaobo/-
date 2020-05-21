@@ -47,8 +47,8 @@
             </template>
           </el-table-column>
           <el-table-column label="操作">
-            <template >
-              <HintButton title="删除" type="danger" icon="el-icon-delete" size="mini"></HintButton>
+            <template slot-scope="{row,index}">
+              <HintButton @click="attr.attrValueList.splice(index, 1)" title="删除" type="danger" icon="el-icon-delete" size="mini"></HintButton>
             </template>
           </el-table-column>
         </el-table>
@@ -60,6 +60,7 @@
 </template>
 
 <script>
+import { c } from '../../../test/es-module/test1';
   export default {
     name: 'AttrList',
     data() {
@@ -122,7 +123,7 @@
       //显示修改属性的界面
       showUpdate(attr){
         //保存要修改的属性对象,一旦保存给atte页面也会有对应的数据显示
-        this.attr = attr
+        this.attr = {...attr}  //浅拷贝(克隆)
         //显示更新的界面
         this.isShowList = false;
       },
@@ -135,7 +136,7 @@
           const isRepeat = this.attr.attrValueList.some((item,index)=>{
              //因为是在attrValueList这个数组当中查找.而添加的数据已经添加到这个数组的最后一位.
           //所以肯定会查找到,但是这样是不对的,它应该和除了它本身的其他数据进行判断
-          if(index!==value){//直接判断是否是当前对象即可
+          if(item!==value){//直接判断是否是当前对象即可
             return item.valueName===value.valueName  //此时不是一句话的箭头函数,所以需要返回值
           }
           })
