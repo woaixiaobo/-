@@ -27,12 +27,12 @@
 
     <!-- :visible.syncd绑定了自定义事件,
     内部点击对应的元素时出触发 $emit('update:visible', false) 自动关闭-->
-    <el-dialog title="收货地址" :visible.sync="isShowDialog">
-      <el-form :model="form" style="width:80%">
-        <el-form-item label="品牌名称" :label-width="formLabelWidth">
+    <el-dialog :title="form.id?'跟新':'添加'" :visible.sync="isShowDialog">
+      <el-form :model="form" style="width:80%" :rules="rules"  ref="tmform" >
+        <el-form-item label="品牌名称" :label-width="formLabelWidth" prop="tmName">
           <el-input v-model="form.tmName" autocomplete="off" placeholder="请输入品牌名称"></el-input>
         </el-form-item>
-        <el-form-item label="品牌LOGO" :label-width="formLabelWidth">
+        <el-form-item label="品牌LOGO" :label-width="formLabelWidth" prop="logoUrl">
           <!-- action:指定上传图片的接口地址
               1.组件内部发送上传文件的ajax(http://182.92.128.115/admin/product/fileUpload)请求,
                 但是存在跨域,所以我们用请求代理 /dev-api/admin/product/fileUpload
@@ -80,7 +80,19 @@
         },
         formLabelWidth: '100px',
         imageUrl: '',
-      }
+        rules: {
+          tmName: [
+            { required: true, message: '请输入品牌名称', trigger: 'change' }, //值发生改变时
+            // { min: 2, max: 10, message: '长度在 2 到 10 个字符', trigger: 'blur' } //失去焦点是触发
+            //用自定义的方式来写  validator校验器,要指定一个校验函数 trigger触发条件
+            { validator: this.validataTmName, trigger: 'blur' }
+          ],
+          logoUrl: [
+            { required: true, message: '请指定LOGO图片'}
+          ],
+        }
+      };
+
     },
     mounted() {
       // 测试新定义的接口请求函数
@@ -90,6 +102,21 @@
       this.getTrademarks();
     },
     methods: {
+      //校验品牌名称的自定义回调函数
+      /**
+       * value:输入的最新值
+       * callback:指定是否通过验证的函数
+       * 长度必须在2-10个之间
+       */
+      validataTmName (rule, value, callback){
+        if (value.length<2||vlaue.length>10) {
+          //如果调用callback传入error就代表不通过,并且提示错误信息
+          callback(new Error('长度在 2 到 10 个字符'));
+        } else {
+          //callback不传入任何参数,就代表通过
+          callback();
+        }
+      },
       //异步获取指定页码列表的数据
       async getTrademarks(page = 1) { //page的默认值为1
         this.page = page;
@@ -162,28 +189,35 @@
         return isJPGOrPNG && idLt500kb;
       },
       //添加或者更新品牌,因为不管是添加还是更新,都需要trademark数据(就是用户的信息data当中的form)
-      async addOrUpdateTrademark(){
-        //取出请求的数据 form
-        const trademark = this.form;
-        //定义请求获得的数据
-        let result;
-        //判断点击的是添加还是修改 用品牌当中的id来判断即可
-        if(trademark.id){//更新数据的trademark是需要id的,但是传递过来的row当中已经包含了id,所以无需担心id问题
-          result = await this.$API.trademark.update(trademark);
-        }else{//如果没有数据,则点击的是添加,发送添加请求
-          result = await this.$API.trademark.add(trademark);
-        }
+      addOrUpdateTrademark(){
+        //先进行统一的表单验证,如果没通过,不提交,只是显示错误提示
+        this.$refs.tmform.validate(async (valid) => {//当前校验完成后调用
+          if (valid) {//通过
+            //取出请求的数据 form
+            const trademark = this.form;
+            //定义请求获得的数据
+            let result;
+            //判断点击的是添加还是修改 用品牌当中的id来判断即可
+            if(trademark.id){//更新数据的trademark是需要id的,但是传递过来的row当中已经包含了id,所以无需担心id问题
+              result = await this.$API.trademark.update(trademark);
+            }else{//如果没有数据,则点击的是添加,发送添加请求
+              result = await this.$API.trademark.add(trademark);
+            }
 
-        //成功后,提示成功添加/更新成功,并且隐藏当前dialog,重新显示新的品牌列表
-        if(result.code===200){
-          this.$message.success(`${trademark.id?'更新':'添加'}品牌成功`);
-          this.isShowDialog = false;
-          //添加成功后跳转到第一页,更新后就在当前页面
-          this.getTrademarks(trademark.id ? this.page:1);
-        }else{
-          //失败的提示
-          this.$message.error(`添加品牌失败`)
-        }
+            //成功后,提示成功添加/更新成功,并且隐藏当前dialog,重新显示新的品牌列表
+            if(result.code===200){
+              this.$message.success(`${trademark.id?'更新':'添加'}品牌成功`);
+              this.isShowDialog = false;
+              //添加成功后跳转到第一页,更新后就在当前页面
+              this.getTrademarks(trademark.id ? this.page:1);
+            }else{
+              //失败的提示
+              this.$message.error(`添加品牌失败`)
+            }
+            } else {
+              //不需要做任何事情,因为上边已经完成了提示
+            }
+          });
       },
       //删除品牌
       async deleteTrademark(trademark){

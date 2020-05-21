@@ -20,7 +20,7 @@
           <el-table-column label="操作" width="150">
             <template slot-scope="{row}">
               <el-button @click="showUpdate(row)" type="primary" icon="el-icon-edit" size="mini"></el-button>
-              <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+              <el-button @click="deleteAttr(row)" type="danger" icon="el-icon-delete" size="mini"></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -43,7 +43,7 @@
               <el-input v-if="row.edit" v-model="row.valueName"
               @blur="toShow(row)" @keydown.enter.native="toShow(row)"
               size="mini" placeholder="请输入属性值名称"></el-input>
-              <span v-else @click="toEdit(row)">{{row.valueName}}</span>
+              <span  style="display: inline-block; width: 100%" v-else @click="toEdit(row)">{{row.valueName}}</span>
             </template>
           </el-table-column>
           <el-table-column label="操作">
@@ -52,7 +52,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <el-button type="primary">保存</el-button>
+        <el-button type="primary" @click="saveDate">保存</el-button>
         <el-button @click="isShowList = true">取消</el-button>
       </div>
     </el-card>
@@ -61,6 +61,8 @@
 
 <script>
 import { c } from '../../../test/es-module/test1';
+//深拷贝的包,loadsh是vue脚手架本来就携带好的,无需重新下载
+import cloneDeep from 'lodash/cloneDeep'
   export default {
     name: 'AttrList',
     data() {
@@ -123,7 +125,10 @@ import { c } from '../../../test/es-module/test1';
       //显示修改属性的界面
       showUpdate(attr){
         //保存要修改的属性对象,一旦保存给atte页面也会有对应的数据显示
-        this.attr = {...attr}  //浅拷贝(克隆)
+        // this.attr = {...attr}  //浅拷贝(克隆),知道吧attr对象里边的第一层的值克隆了出来,
+                    //对象里边包含的对象的值并未拷贝,而是拷贝的它的地址,所以修改属性值时还是会出现问题
+        //所以用深拷贝解决
+        this.attr = cloneDeep(attr);
         //显示更新的界面
         this.isShowList = false;
       },
@@ -157,6 +162,36 @@ import { c } from '../../../test/es-module/test1';
         }else{
           this.$set(value,'edit',true);
         }
+      },
+      //点击保存提交数据,跟新界面
+      async saveDate(){
+          //收集数据
+          const {attrName,attrValueList,categoryId,categoryLevel} = this.attr;
+          const attrInfo={
+            attrName,
+            attrValueList,
+            categoryId,
+            categoryLevel
+          };
+          //发送保存/跟新函数
+          const result = await this.$API.attr.addOrUpdate(attrInfo);
+          //如果成功,重新发送列表请求,跟新页面
+          const reslut2 = await this.$API.attr.getList(this.category1Id, this.category2Id, this.category3Id)
+          //保存列表的属性数据
+          this.attrs = reslut2.data;
+          //并且退出添加页面,显示属性列表页面
+          this.isShowList = true;
+      },
+      //点击删除按钮,根据id删除属性
+      async deleteAttr(value){
+        // console.log(value);
+        //发送删除请求
+        const reslut = await this.$API.attr.remove(value.id);
+        //如果成功便重新获取列表属性,跟新界面
+        const reslut2 = await this.$API.attr.getList(this.category1Id, this.category2Id, this.category3Id)
+        //保存列表的属性数据
+        this.attrs = reslut2.data;
+
       }
     },
 

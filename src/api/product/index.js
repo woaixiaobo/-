@@ -16,7 +16,23 @@ export default{
     return request(`/admin/product/getAttrValueList/${attrId}`)
   },
   //添加/更新属性
-  //区别就是发生的请求参数有无id,有就是更新,没有就是添加
+  //区别就是发生的请求参数有无id,有就是更新,没有就是添加\
+  /**
+   *
+   * {
+      "attrName": "string",
+      "attrValueList": [
+        {
+          "attrId": 0,
+          "id": 0,
+          "valueName": "string"
+        }
+      ],
+      "categoryId": 0,
+      "categoryLevel": 0,
+      "id": 0 //跟新时才存在Id
+    }
+   */
   addOrUpdate (attrInfo) {
     return request.post('/admin/product/saveAttrInfo', attrInfo)
   }
