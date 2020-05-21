@@ -47,8 +47,8 @@
             </template>
           </el-table-column>
           <el-table-column label="操作">
-            <template slot-scope="{row,index}">
-              <HintButton @click="attr.attrValueList.splice(index, 1)" title="删除" type="danger" icon="el-icon-delete" size="mini"></HintButton>
+            <template slot-scope="{row,$index}">
+              <HintButton @click="attr.attrValueList.splice($index, 1)" title="删除" type="danger" icon="el-icon-delete" size="mini"></HintButton>
             </template>
           </el-table-column>
         </el-table>
@@ -166,15 +166,15 @@ import cloneDeep from 'lodash/cloneDeep'
       //点击保存提交数据,跟新界面
       async saveDate(){
           //收集数据
-          const {attrName,attrValueList,categoryId,categoryLevel} = this.attr;
-          const attrInfo={
-            attrName,
-            attrValueList,
-            categoryId,
-            categoryLevel
-          };
+          // const {attrName,attrValueList,categoryId,categoryLevel} = this.attr;
+          // const attrInfo={
+          //   attrName,
+          //   attrValueList,
+          //   categoryId,
+          //   categoryLevel
+          // };
           //发送保存/跟新函数
-          const result = await this.$API.attr.addOrUpdate(attrInfo);
+          const result = await this.$API.attr.addOrUpdate(this.attr);
           //如果成功,重新发送列表请求,跟新页面
           const reslut2 = await this.$API.attr.getList(this.category1Id, this.category2Id, this.category3Id)
           //保存列表的属性数据
@@ -184,15 +184,29 @@ import cloneDeep from 'lodash/cloneDeep'
       },
       //点击删除按钮,根据id删除属性
       async deleteAttr(value){
-        // console.log(value);
-        //发送删除请求
-        const reslut = await this.$API.attr.remove(value.id);
-        //如果成功便重新获取列表属性,跟新界面
-        const reslut2 = await this.$API.attr.getList(this.category1Id, this.category2Id, this.category3Id)
-        //保存列表的属性数据
-        this.attrs = reslut2.data;
+        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async() => {
+          //发送删除请求
+          const reslut = await this.$API.attr.remove(value.id);
+          //如果成功便重新获取列表属性,跟新界面
+          const reslut2 = await this.$API.attr.getList(this.category1Id, this.category2Id, this.category3Id)
+          //保存列表的属性数据
+          this.attrs = reslut2.data;
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
 
-      }
+      },
     },
 
   }
