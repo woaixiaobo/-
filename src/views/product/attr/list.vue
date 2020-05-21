@@ -197,7 +197,7 @@ import cloneDeep from 'lodash/cloneDeep'
           this.attrs = reslut2.data;
           this.$message({
             type: 'success',
-            message: '删除成功!'
+            message: '删除成功!!'
           });
         }).catch(() => {
           this.$message({
