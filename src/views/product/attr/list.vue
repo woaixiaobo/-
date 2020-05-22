@@ -126,7 +126,7 @@ import cloneDeep from 'lodash/cloneDeep'
       showUpdate(attr){
         //保存要修改的属性对象,一旦保存给atte页面也会有对应的数据显示
         // this.attr = {...attr}  //浅拷贝(克隆),知道吧attr对象里边的第一层的值克隆了出来,
-                    //对象里边包含的对象的值并未拷贝,而是拷贝的它的地址,所以修改属性值时还是会出现问题
+          //对象里边包含的对象的值并未拷贝,而是拷贝的它的地址,所以修改属性值时还是会出现问题
         //所以用深拷贝解决
         this.attr = cloneDeep(attr);
         //显示更新的界面
