@@ -86,8 +86,9 @@ export default {
         console.log(file, fileList);
       },
       handlePictureCardPreview(file) {
-        this.dialogImageUrl.push(file);
-        // this.dialogVisible = true;
+        // this.dialogImageUrl.push(file);
+        this.dialogImageUrl = file.url;
+        this.dialogVisible = true;
       },
       back(){
         //分发自定义事件,让当前dialog页面关闭
@@ -119,7 +120,8 @@ export default {
           const url = {
             url:item.imgUrl
           }
-          this.handlePictureCardPreview(url)
+          this.dialogImageUrl.push(url);
+          // this.handlePictureCardPreview(url)
         })
       },
       //获取所有品牌的列表
