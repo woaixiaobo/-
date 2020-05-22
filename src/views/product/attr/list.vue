@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card class="box-card">
-      <CategorySelector @categoryChange="handleCategoryChange" />
+      <CategorySelector ref="cs" @categoryChange="handleCategoryChange" />
     </el-card>
     <el-card>
       <div v-show="isShowList">
@@ -39,8 +39,8 @@
           <el-table-column label="序号" type="index" width="80" align="center">
           </el-table-column>
           <el-table-column label="属性值名称">
-            <template slot-scope="{row}">
-              <el-input v-if="row.edit" v-model="row.valueName"
+            <template slot-scope="{row,$index}">
+              <el-input :ref="$index" v-if="row.edit" v-model="row.valueName"
               @blur="toShow(row)" @keydown.enter.native="toShow(row)"
               size="mini" placeholder="请输入属性值名称"></el-input>
               <span  style="display: inline-block; width: 100%" v-else @click="toEdit(row)">{{row.valueName}}</span>
@@ -90,8 +90,14 @@ import cloneDeep from 'lodash/cloneDeep'
         //判断是几级列表返回来的数据,并保存对应的id
         if (level === 1) {
           this.category1Id = categoryId;
+          //此时应该清除下边列表的数据,把id清除即可
+          this.category2Id = ''
+          this.category3Id = ''
+          this.attrs = []
         } else if (level === 2) {
           this.category2Id = categoryId;
+          this.category3Id = ''
+          this.attrs = []
         } else {
           this.category3Id = categoryId;
           //如果三级列表也传递了值过来,那么代表三级别表的id数值已经全部收集完毕
@@ -120,6 +126,11 @@ import cloneDeep from 'lodash/cloneDeep'
           attrId:this.attr.id, //只有修改属性时才有值,否则就是undefined
           valueName:'',
           edit:true,//添加的新属性值是编辑模式的,输入数据后才会变为浏览模式
+        })
+        //点击添加属性,会创建一个input对象,此时应该让最后一个input获得焦点
+         //而最后一个input的下标就是attr.attrValueList的长度-1
+        this.$nextTick(()=>{
+          this.$refs[this.attr.attrValueList.length-1].focus();
         })
       },
       //显示修改属性的界面
@@ -154,7 +165,7 @@ import cloneDeep from 'lodash/cloneDeep'
         }
       },
       //点击文本改为编辑模式
-      toEdit(value){
+      toEdit(value,index){
         //点击会发现有的没效果,那是因为之前的value对象,没有edit这个属性
         //所以进行判断,有edit的直接改为true,没有的则通过$set添加
         if(value.hasOwnProperty('edit')){
@@ -162,19 +173,37 @@ import cloneDeep from 'lodash/cloneDeep'
         }else{
           this.$set(value,'edit',true);
         }
+        //找到当前的input对象,让其获得焦点,用index即可
+        //存在的问题:因为此时数据更新, 但是页面是异步跟新的,所以用$nextTick
+        //来使页面更新完成后在操作
+        this.$nextTick(()=>{
+          this.$refs[index].focus();
+        })
       },
       //点击保存提交数据,跟新界面
       async saveDate(){
           //收集数据
-          // const {attrName,attrValueList,categoryId,categoryLevel} = this.attr;
-          // const attrInfo={
-          //   attrName,
-          //   attrValueList,
-          //   categoryId,
-          //   categoryLevel
-          // };
+          const attr = this.attr;
+          //提交前对数据进行优化
+          /*
+          属性值名称没有指定, 请求保存的是"" ==> 将属性值名称为""的属性值对象从数组中过滤掉
+          一个属性值都没有指定, 也提交了请求  ==> 不能提交请求
+          请求携带了没有必要的参数数据: edit  ==> 删除此属性
+          */
+          attr.attrValueList = attr.attrValueList.filter(value=>{
+            if(value.valueName!==''){
+              //因为请求参数不需要这个,所以清除掉,等点击的时候就会在通过set添加上
+              delete value.edit;
+              return true
+            }
+          });
+          //如果没添加任何值,就不会发送请求
+          if(attr.attrValueList.length===0){
+            this.$message.warning('至少指定一个属性值名称');
+            return
+          }
           //发送保存/跟新函数
-          const result = await this.$API.attr.addOrUpdate(this.attr);
+          const result = await this.$API.attr.addOrUpdate(attr);
           //如果成功,重新发送列表请求,跟新页面
           const reslut2 = await this.$API.attr.getList(this.category1Id, this.category2Id, this.category3Id)
           //保存列表的属性数据
@@ -208,7 +237,12 @@ import cloneDeep from 'lodash/cloneDeep'
 
       },
     },
-
+    watch:{
+      //用isShowList的状态来决定三级下拉菜单的状态,因为isShowList是变化的, 所以用监视属性
+      isShowList(value){
+        this.$refs.cs.disabled = !value;
+      }
+    },
   }
 
 </script>
