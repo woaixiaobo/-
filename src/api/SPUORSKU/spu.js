@@ -18,7 +18,7 @@ export default{
   },
   //保存/更新sku的信息
   addUpdate(spuInfo){
-    return request.post(`/admin/product/${spuInfo.id?'update':'save'}SpuInfo`,spuInfo)
+    return request.post(`/admin/product/${spuInfo.id ? 'update' : 'save'}SpuInfo`, spuInfo)
   },
   //获取指定分类的spu分页列表
   getList(page,limit,category3Id){
