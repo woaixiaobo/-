@@ -19,7 +19,7 @@
           </el-table-column>
           <el-table-column label="操作" >
               <template slot-scope="{row}">
-                <Hint-button @click="showSkuForm(row.id)" title="添加SKU" type="primary" icon="el-icon-plus" size="mini"></Hint-button>
+                <Hint-button @click="showSkuForm(row)" title="添加SKU" type="primary" icon="el-icon-plus" size="mini"></Hint-button>
                 <Hint-button title="修改SKU" type="primary"
                 icon="el-icon-edit" size="mini"
                 @click="showUpdateSpu(row)"
@@ -142,7 +142,7 @@ export default {
         this.$refs.SpuForm.initLoadUpdateDate(spu.id);
       },
       //显示sku添加界面
-      showSkuForm(spuId){
+      showSkuForm(spu){
         this.isShowSkuForm = true;
         //把三级ID传递给子组件,收集数据
         const skuId={
@@ -152,7 +152,7 @@ export default {
         }
         console.log(skuId);
         //通知子组件SkuForm请求添加界面的初始化数据
-        this.$refs.SkuForm.initSkuDate(skuId,spuId);
+        this.$refs.SkuForm.initSkuDate(skuId,spu);
       },
       //点击添加显示spu添加界面
       showAddSpu(){
