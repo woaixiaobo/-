@@ -12,6 +12,10 @@ export default{
   onSale(skuId){
     return request.get(`/admin/product/onSale/${skuId}`)
   },
+  //获取sku列表
+  getSkuList(page,limit){
+    return request.get(`/admin/product/list/${page}/${limit}`)
+  },
   //根据id删除sku
   remove(skuId){
     return request.delete(`/admin/product/deleteSku/${skuId}`)
@@ -19,6 +23,10 @@ export default{
   //根据spu的id查询对应的sku的列表
   getListBySpuId(spuId){
     return request.get(`/admin/product/findBySpuId/${spuId}`)
+  },
+  //根据sku的id查询对应的sku的详情信息
+  getSkuInfo(skuId){
+    return request.get(`/admin/product/getSkuById/${skuId}`)
   },
   /*
   保存/更新SKU
