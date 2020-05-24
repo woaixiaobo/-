@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-card class="box-card">
+    <el-card class="box-card" style="margin-bottom: 20px">
         <CategorySelector @categoryChange="handleCategoryChange"/>
     </el-card>
     <el-card>
@@ -19,7 +19,7 @@
           </el-table-column>
           <el-table-column label="操作" >
               <template slot-scope="{row}">
-                <Hint-button @click="showSkuForm" title="添加SKU" type="primary" icon="el-icon-plus" size="mini"></Hint-button>
+                <Hint-button @click="showSkuForm(row.id)" title="添加SKU" type="primary" icon="el-icon-plus" size="mini"></Hint-button>
                 <Hint-button title="修改SKU" type="primary"
                 icon="el-icon-edit" size="mini"
                 @click="showUpdateSpu(row)"
@@ -51,6 +51,7 @@
         但如果不加:, 传递给子组件的总是false值
       -->
       <SpuForm ref="SpuForm" :visible.sync="isShowSpuForm" @getCategoryChange="SaveSuccess"></SpuForm>
+      <SkuForm ref="SkuForm" v-show="isShowSkuForm" @closeSku="isShowSkuForm=false"></SkuForm>
     </el-card>
     <el-dialog :title="spuName+'-->SKU列表'" :visible.sync="dialogTableVisible">
       <el-table :data="skuList">
@@ -141,8 +142,17 @@ export default {
         this.$refs.SpuForm.initLoadUpdateDate(spu.id);
       },
       //显示sku添加界面
-      showSkuForm(){
+      showSkuForm(spuId){
         this.isShowSkuForm = true;
+        //把三级ID传递给子组件,收集数据
+        const skuId={
+          category1Id:this.category1Id,
+          category2Id:this.category2Id,
+          category3Id:this.category3Id,
+        }
+        console.log(skuId);
+        //通知子组件SkuForm请求添加界面的初始化数据
+        this.$refs.SkuForm.initSkuDate(skuId,spuId);
       },
       //点击添加显示spu添加界面
       showAddSpu(){
@@ -170,6 +180,8 @@ export default {
         //发送删除请求
         try {
           const result = await this.$API.spu.remove(skuId);
+          //删除成功变直接跳转到第一页分页列表
+          this.getSpuList();
         } catch (error) {
           console.log(error);
         }
