@@ -32,12 +32,17 @@ service.interceptors.response.use(
     */
     if (result.code !== 20000 && result.code !== 200) {
       Message({
-        message: result.message || 'Error',
+        message: result.data ||result.message || 'Error',
         type: 'error',
         duration: 5 * 1000
       })
-
-      return Promise.reject(new Error(result.message || '未知错误'))
+      if(result.code === 201){
+        //如果是201就代表是系统数据不可删除，此处返回一个pending状态的promise，中断组件当中的
+        //promise链式调用
+        return new Promise(()=>{});
+      }
+      //根据接口的来决定返回时使用mesage和data
+      return Promise.reject(new Error( result.data ||result.message || '未知错误'))
     } else {
       return result
     }
