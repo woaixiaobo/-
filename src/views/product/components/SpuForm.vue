@@ -31,7 +31,7 @@
           v-for="(saleAttr) in SaleAttrList" :key="saleAttr.id"
           :label="saleAttr.name" :value="saleAttr.id + '-' + saleAttr.name"></el-option>
       </el-select>
-      <el-button type="primary" icon="el-icon-plus" @click="addSaleAttr">添加销售属性</el-button>
+      <el-button type="primary" :disabled="!SaleAttrList.length" icon="el-icon-plus" @click="addSaleAttr">添加销售属性</el-button>
     </el-form-item>
     <el-form-item>
       <el-table :data="spuInfo.spuSaleAttrList" border style="width: 100%">
