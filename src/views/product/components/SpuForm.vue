@@ -40,7 +40,7 @@
         :label="attr.name"
         :value="attr.id + ':' + attr.name"></el-option>
       </el-select>
-      <!-- 当选择框没有值时是不可以点击添加按钮的，用输入框的attrIdAttrName来做判断即可 -->
+      <!-- 当选择框没 有值时是不可以点击添加按钮的，用输入框的attrIdAttrName来做判断即可 -->
       <el-button :disabled="!attrIdAttrName"
       @click="addSpuSaleAttr"
       type="primary"
