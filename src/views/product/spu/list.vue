@@ -1,7 +1,7 @@
 <template>
   <div>
-    <el-card class="box-card" style="margin-bottom: 20px">
-        <CategorySelector @categoryChange="handleCategoryChange"/>
+    <el-card v-show="!isShowSkuForm" class="box-card" style="margin-bottom: 20px">
+        <CategorySelector  ref="cs" @categoryChange="handleCategoryChange"/>
     </el-card>
     <el-card>
       <div v-show="!isShowSpuForm && !isShowSkuForm">
@@ -91,6 +91,12 @@ export default {
 
       isShowSpuForm: false, // 是否显示spuForm界面
       isShowSkuForm: false, // 是否显示skuForm界面
+    }
+  },
+  watch: {
+    isShowSpuForm(value){
+      this.$refs.cs.disabled = value;
+      console.log(this.$refs.cs);
     }
   },
   methods: {
